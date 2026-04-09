@@ -110,6 +110,18 @@
     .btn-cancelar{background:var(--gray-ll);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:13px;font-size:15px;font-weight:500;cursor:pointer}
     .btn-confirmar-entrada{background:var(--teal);color:var(--white);border:none;border-radius:var(--radius-sm);padding:13px;font-size:15px;font-weight:600;cursor:pointer}
     .btn-confirmar-salida{background:var(--coral);color:var(--white);border:none;border-radius:var(--radius-sm);padding:13px;font-size:15px;font-weight:600;cursor:pointer}
+    .resumen-emp{border-radius:var(--radius);padding:18px;margin-bottom:16px}
+    .resumen-emp .re-title{font-size:12px;font-weight:600;color:var(--teal-d);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:14px}
+    .re-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .re-item{background:var(--white);border:1px solid #9FE1CB;border-radius:var(--radius-sm);padding:12px;text-align:center}
+    .re-num{font-size:20px;font-weight:700;color:var(--teal)}
+    .re-lbl{font-size:11px;color:var(--teal-d);margin-top:3px}
+    .aviso-pend{background:#FAEEDA;border:1px solid #FAC775;border-radius:var(--radius);padding:14px;margin-bottom:16px;display:none}
+    .aviso-pend .ap-icon{font-size:18px;margin-bottom:4px}
+    .aviso-pend .ap-title{font-size:13px;font-weight:600;color:#633806;margin-bottom:4px}
+    .aviso-pend .ap-body{font-size:13px;color:#854F0B;margin-bottom:12px;line-height:1.5}
+    .btn-salida-rapida{width:100%;padding:11px;background:#BA7517;color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer}
+    .btn-salida-rapida:active{transform:scale(0.98)}
   </style>
 </head>
 <body>
@@ -133,11 +145,30 @@
 
     <!-- EMPLEADO -->
     <div id="screen-empleado" class="screen active">
+      <!-- AVISO SALIDA PENDIENTE -->
+      <div class="aviso-pend" id="aviso-pend">
+        <div class="ap-icon">⚠️</div>
+        <div class="ap-title">Tienes una entrada sin salida</div>
+        <div class="ap-body" id="aviso-body">Entraste a las -- en --.</div>
+        <button class="btn-salida-rapida" id="btn-salida-rapida">Registrar salida ahora</button>
+      </div>
+
+      <!-- RESUMEN PERSONAL -->
+      <div class="resumen-emp" id="resumen-emp" style="background:var(--teal-l);display:none">
+        <div class="re-title" id="resumen-nombre-label">Mis horas</div>
+        <div class="re-grid">
+          <div class="re-item"><div class="re-num" id="re-hoy">--</div><div class="re-lbl">Hoy</div></div>
+          <div class="re-item"><div class="re-num" id="re-semana">--</div><div class="re-lbl">Esta semana</div></div>
+          <div class="re-item"><div class="re-num" id="re-mes">--</div><div class="re-lbl">Este mes</div></div>
+        </div>
+      </div>
+
+      <!-- FORMULARIO -->
       <div class="card">
         <div class="card-title">Registrar jornada</div>
         <div class="form-group">
           <label>Tu nombre</label>
-          <div class="select-wrap"><select id="emp-nombre"><option value="">— Selecciona —</option></select></div>
+          <div class="select-wrap"><select id="emp-nombre" onchange="if(this.value) cargarResumenEmpleado(this.value)"><option value="">— Selecciona —</option></select></div>
         </div>
         <div class="form-group">
           <label>Ubicación / cliente</label>
@@ -444,6 +475,37 @@ function eliminar(tipo, itemEnc) {
 // ══════════════════════════════════════════
 //  FICHAR
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+//  RESUMEN PERSONAL DEL EMPLEADO
+// ══════════════════════════════════════════
+function cargarResumenEmpleado(nombre) {
+  apiCall({ accion: "obtenerResumenEmpleado", empleado: nombre }, function(res) {
+    if (!res || !res.ok) return;
+
+    document.getElementById("resumen-emp").style.display = "block";
+    document.getElementById("resumen-nombre-label").textContent = "Mis horas — " + nombre;
+    document.getElementById("re-hoy").textContent    = res.hoy    || "0h";
+    document.getElementById("re-semana").textContent = res.semana || "0h";
+    document.getElementById("re-mes").textContent    = res.mes    || "0h";
+
+    // Aviso si tiene entrada pendiente hoy
+    if (res.pendiente) {
+      var aviso = document.getElementById("aviso-pend");
+      document.getElementById("aviso-body").textContent =
+        "Entraste a las " + res.pendiente.hora + " en " + res.pendiente.ubicacion + ". ¿Ya terminaste?";
+      aviso.style.display = "block";
+      document.getElementById("btn-salida-rapida").onclick = function() {
+        document.getElementById("emp-nombre").value    = nombre;
+        document.getElementById("emp-ubicacion").value = res.pendiente.ubicacion;
+        fichar("salida");
+      };
+    } else {
+      document.getElementById("aviso-pend").style.display = "none";
+    }
+  });
+}
+
 function fichar(tipo) {
   var nombre    = document.getElementById("emp-nombre").value;
   var ubicacion = document.getElementById("emp-ubicacion").value;
@@ -705,6 +767,17 @@ function demoRes(data) {
   if (a==="eliminarEmpleado")  { _demoEmp = _demoEmp.filter(function(e){ return e!==data.nombre; }); return { ok:true }; }
   if (a==="eliminarUbicacion") { _demoUbi = _demoUbi.filter(function(e){ return e!==data.nombre; }); return { ok:true }; }
   if (a==="fichar") { var h=new Date(); return { ok:true, hora:pad(h.getHours())+":"+pad(h.getMinutes()), fecha:pad(h.getDate())+"/"+pad(h.getMonth()+1)+"/"+h.getFullYear() }; }
+  if (a==="obtenerResumenEmpleado") {
+    var hoy = new Date();
+    var mins = Math.floor(Math.random()*480)+60;
+    var h = Math.floor(mins/60); var m = mins%60;
+    return { ok:true,
+      hoy:    h+"h "+pad(m)+"m",
+      semana: (h*3+Math.floor(Math.random()*8))+"h "+pad(Math.floor(Math.random()*59))+"m",
+      mes:    (h*18+Math.floor(Math.random()*20))+"h "+pad(Math.floor(Math.random()*59))+"m",
+      pendiente: null
+    };
+  }
   if (a==="obtenerResumen") return { ok:true, activos:{ "Ana García":{ hora:"08:12", ubicacion:"Oficinas Centro" } },
     resumen:[
       { empleado:"Ana García",    dias:22, horas:"176.0", incompletos:0, ubicaciones:"Oficinas Centro", estado:"Listo" },
