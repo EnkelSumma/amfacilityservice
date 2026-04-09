@@ -8,134 +8,97 @@
   <title>AMFacilityService — Fichaje</title>
   <style>
     :root {
-      --teal:      #1D9E75;
-      --teal-l:    #E1F5EE;
-      --teal-d:    #0F6E56;
-      --purple:    #534AB7;
-      --purple-l:  #EEEDFE;
-      --amber:     #BA7517;
-      --amber-l:   #FAEEDA;
-      --coral:     #D85A30;
-      --coral-l:   #FAECE7;
-      --gray:      #5F5E5A;
-      --gray-l:    #F1EFE8;
-      --gray-ll:   #FAFAF8;
-      --border:    #E2E0D8;
-      --text:      #1A1A18;
-      --text-s:    #6B6A65;
-      --white:     #FFFFFF;
-      --radius:    12px;
-      --radius-sm: 8px;
-      --shadow:    0 1px 3px rgba(0,0,0,0.08);
+      --teal:     #1D9E75; --teal-l:  #E1F5EE; --teal-d:  #0F6E56;
+      --purple:   #534AB7; --purple-l:#EEEDFE;
+      --amber:    #BA7517; --amber-l: #FAEEDA;
+      --coral:    #D85A30; --coral-l: #FAECE7;
+      --gray:     #5F5E5A; --gray-l:  #F1EFE8; --gray-ll: #FAFAF8;
+      --border:   #E2E0D8; --text:    #1A1A18; --text-s:  #6B6A65;
+      --white:    #FFFFFF; --radius:  12px;    --radius-sm:8px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gray-ll); color: var(--text); font-size: 16px; }
-
-    .app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
-    .header { background: var(--white); border-bottom: 1px solid var(--border); padding: 16px 20px 0; position: sticky; top: 0; z-index: 10; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .logo { font-size: 17px; font-weight: 700; color: var(--teal); letter-spacing: -0.3px; }
-    .logo span { color: var(--text); font-weight: 400; }
-    .content { flex: 1; padding: 20px 16px; }
-
-    .tabs { display: flex; gap: 0; overflow-x: auto; }
-    .tab { flex: 1; padding: 10px 6px; text-align: center; font-size: 13px; color: var(--text-s); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; background: none; border-top: none; border-left: none; border-right: none; white-space: nowrap; min-width: 70px; }
-    .tab.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 500; }
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
-    .card-title { font-size: 12px; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 16px; }
-
-    label { display: block; font-size: 14px; color: var(--text-s); margin-bottom: 6px; }
-    select, input[type=text], input[type=password] { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; color: var(--text); background: var(--white); appearance: none; -webkit-appearance: none; transition: border-color .2s; outline: none; }
-    select:focus, input:focus { border-color: var(--teal); }
-    .select-wrap { position: relative; }
-    .select-wrap::after { content: "▾"; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-s); pointer-events: none; font-size: 14px; }
-    .form-group { margin-bottom: 16px; }
-
-    .btn { width: 100%; padding: 14px; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: transform .1s, opacity .2s; }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { opacity: 0.5; pointer-events: none; }
-    .btn-entrada { background: var(--teal);   color: var(--white); margin-bottom: 10px; }
-    .btn-salida  { background: var(--coral);  color: var(--white); }
-    .btn-purple  { background: var(--purple); color: var(--white); }
-    .btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); font-weight: 500; }
-    .btn-sm { padding: 8px 14px; font-size: 13px; width: auto; font-weight: 500; }
-    .btn-danger { background: var(--coral-l); color: var(--coral); border: 1px solid #F0997B; font-weight: 500; }
-
-    .toast { border-radius: var(--radius-sm); padding: 13px 15px; margin-top: 14px; font-size: 14px; line-height: 1.5; display: none; }
-    .toast.ok  { background: var(--teal-l);  color: var(--teal-d); border: 1px solid #9FE1CB; }
-    .toast.err { background: var(--coral-l); color: #712B13;       border: 1px solid #F0997B; }
-    .toast.warn{ background: var(--amber-l); color: #633806;       border: 1px solid #FAC775; }
-
-    .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-    .metric { background: var(--gray-ll); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px; text-align: center; }
-    .metric .num { font-size: 28px; font-weight: 700; }
-    .metric .lbl { font-size: 12px; color: var(--text-s); margin-top: 2px; }
-
-    .emp-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .emp-row:last-child { border-bottom: none; }
-    .emp-name { font-size: 15px; font-weight: 500; }
-    .emp-meta { font-size: 13px; color: var(--text-s); margin-top: 2px; }
-    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; }
-    .dot-on  { background: var(--teal); }
-    .dot-off { background: #C8C6BE; }
-
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
-    .badge-ok   { background: var(--teal-l);  color: var(--teal-d); }
-    .badge-warn { background: var(--amber-l); color: var(--amber);  }
-    .badge-off  { background: var(--gray-l);  color: var(--gray);   }
-
-    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 380px; }
-    thead th { font-size: 11px; font-weight: 600; color: var(--text-s); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
-    tbody td { padding: 11px 10px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
-    tbody tr:last-child td { border-bottom: none; }
-
-    .horas-live { font-size: 13px; color: var(--teal-d); background: var(--teal-l); border-radius: 6px; padding: 2px 8px; font-variant-numeric: tabular-nums; }
-    .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 6px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .mes-selector { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-    .mes-selector select { flex: 1; padding: 9px 12px; font-size: 14px; }
-
-    .api-status { font-size: 12px; color: var(--text-s); display: flex; align-items: center; gap: 5px; }
-    .api-dot { width: 7px; height: 7px; border-radius: 50%; }
-    .api-dot.ok       { background: var(--teal); }
-    .api-dot.err      { background: var(--coral); }
-    .api-dot.checking { background: var(--amber); animation: pulse 1s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-    /* ── Configuración: lista editable ── */
-    .config-list { list-style: none; padding: 0; margin: 0 0 14px; }
-    .config-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); gap: 10px; }
-    .config-item:last-child { border-bottom: none; }
-    .config-item span { font-size: 15px; flex: 1; }
-    .btn-del { background: none; border: none; color: var(--coral); font-size: 18px; cursor: pointer; padding: 4px 8px; border-radius: 6px; line-height: 1; }
-    .btn-del:hover { background: var(--coral-l); }
-    .add-row { display: flex; gap: 8px; margin-top: 4px; }
-    .add-row input { flex: 1; padding: 11px 12px; }
-    .add-row button { padding: 11px 16px; background: var(--teal); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    .add-row button:active { transform: scale(0.97); }
-
-    /* ── Login admin ── */
-    .login-overlay { background: var(--gray-ll); padding: 24px 0; }
-    .pin-display { display: flex; justify-content: center; gap: 12px; margin: 20px 0; }
-    .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); transition: background .2s; }
-    .pin-dot.filled { background: var(--purple); border-color: var(--purple); }
-    .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 240px; margin: 0 auto; }
-    .pin-key { padding: 16px; font-size: 20px; font-weight: 500; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; text-align: center; transition: background .1s; }
-    .pin-key:active { background: var(--purple-l); }
-    .pin-key.del { font-size: 16px; color: var(--coral); }
-
-    .section-divider { font-size: 11px; font-weight: 600; color: var(--text-s); text-transform: uppercase; letter-spacing: 0.07em; margin: 20px 0 10px; }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--gray-ll);color:var(--text);font-size:16px}
+    .app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+    .header{background:var(--white);border-bottom:1px solid var(--border);padding:16px 20px 0;position:sticky;top:0;z-index:10}
+    .header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .logo{font-size:17px;font-weight:700;color:var(--teal);letter-spacing:-0.3px}
+    .logo span{color:var(--text);font-weight:400}
+    .content{flex:1;padding:20px 16px}
+    .tabs{display:flex;overflow-x:auto}
+    .tab{flex:1;padding:10px 6px;text-align:center;font-size:13px;color:var(--text-s);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;white-space:nowrap;min-width:70px}
+    .tab.active{color:var(--teal);border-bottom-color:var(--teal);font-weight:500}
+    .screen{display:none}
+    .screen.active{display:block}
+    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+    .card-title{font-size:12px;font-weight:600;color:var(--text-s);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:16px}
+    label{display:block;font-size:14px;color:var(--text-s);margin-bottom:6px}
+    select,input[type=text],input[type=password]{width:100%;padding:13px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;color:var(--text);background:var(--white);appearance:none;-webkit-appearance:none;transition:border-color .2s;outline:none}
+    select:focus,input:focus{border-color:var(--teal)}
+    .select-wrap{position:relative}
+    .select-wrap::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-s);pointer-events:none;font-size:14px}
+    .form-group{margin-bottom:16px}
+    .btn{width:100%;padding:14px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;border:none;transition:transform .1s,opacity .2s}
+    .btn:active{transform:scale(0.98)}
+    .btn:disabled{opacity:0.5;pointer-events:none}
+    .btn-entrada{background:var(--teal);color:var(--white);margin-bottom:10px}
+    .btn-salida{background:var(--coral);color:var(--white)}
+    .btn-purple{background:var(--purple);color:var(--white)}
+    .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text);font-weight:500}
+    .btn-sm{padding:8px 14px;font-size:13px;width:auto;font-weight:500}
+    .toast{border-radius:var(--radius-sm);padding:13px 15px;margin-top:14px;font-size:14px;line-height:1.5;display:none}
+    .toast.ok{background:var(--teal-l);color:var(--teal-d);border:1px solid #9FE1CB}
+    .toast.err{background:var(--coral-l);color:#712B13;border:1px solid #F0997B}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+    .metric{background:var(--gray-ll);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;text-align:center}
+    .metric .num{font-size:28px;font-weight:700}
+    .metric .lbl{font-size:12px;color:var(--text-s);margin-top:2px}
+    .emp-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+    .emp-row:last-child{border-bottom:none}
+    .emp-name{font-size:15px;font-weight:500}
+    .emp-meta{font-size:13px;color:var(--text-s);margin-top:2px}
+    .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+    .dot-on{background:var(--teal)}
+    .dot-off{background:#C8C6BE}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+    .badge-ok{background:var(--teal-l);color:var(--teal-d)}
+    .badge-warn{background:var(--amber-l);color:var(--amber)}
+    .badge-off{background:var(--gray-l);color:var(--gray)}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    table{width:100%;border-collapse:collapse;font-size:14px;min-width:380px}
+    thead th{font-size:11px;font-weight:600;color:var(--text-s);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:0.05em;white-space:nowrap}
+    tbody td{padding:11px 10px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+    tbody tr:last-child td{border-bottom:none}
+    .horas-live{font-size:13px;color:var(--teal-d);background:var(--teal-l);border-radius:6px;padding:2px 8px;font-variant-numeric:tabular-nums}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .mes-selector{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .mes-selector select{flex:1;padding:9px 12px;font-size:14px}
+    .api-status{font-size:12px;color:var(--text-s);display:flex;align-items:center;gap:5px}
+    .api-dot{width:7px;height:7px;border-radius:50%}
+    .api-dot.ok{background:var(--teal)}
+    .api-dot.err{background:var(--coral)}
+    .api-dot.checking{background:var(--amber);animation:pulse 1s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+    .config-list{list-style:none;padding:0;margin:0 0 14px}
+    .config-item{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border);gap:10px}
+    .config-item:last-child{border-bottom:none}
+    .config-item span{font-size:15px;flex:1}
+    .btn-del{background:none;border:none;color:var(--coral);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;line-height:1}
+    .btn-del:hover{background:var(--coral-l)}
+    .add-row{display:flex;gap:8px;margin-top:4px}
+    .add-row input{flex:1;padding:11px 12px}
+    .add-row button{padding:11px 16px;background:var(--teal);color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .pin-display{display:flex;justify-content:center;gap:12px;margin:20px 0}
+    .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);transition:background .2s}
+    .pin-dot.filled{background:var(--purple);border-color:var(--purple)}
+    .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:240px;margin:0 auto}
+    .pin-key{padding:16px;font-size:20px;font-weight:500;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;text-align:center;transition:background .1s}
+    .pin-key:active{background:var(--purple-l)}
+    .pin-key.del{font-size:16px;color:var(--coral)}
   </style>
 </head>
 <body>
 <div class="app">
-
-  <!-- ── HEADER ── -->
   <div class="header">
     <div class="header-top">
       <div class="logo">AM<span>FacilityService</span></div>
@@ -145,38 +108,32 @@
       </div>
     </div>
     <div class="tabs">
-      <button class="tab active"  onclick="showTab('empleado',this)">Empleado</button>
-      <button class="tab"         onclick="showTab('admin',this)">Administración</button>
-      <button class="tab"         onclick="showTab('config',this)">Configuración</button>
+      <button class="tab active" onclick="showTab('empleado',this)">Empleado</button>
+      <button class="tab" onclick="showTab('admin',this)">Administración</button>
+      <button class="tab" onclick="showTab('config',this)">Configuración</button>
     </div>
   </div>
 
   <div class="content">
 
-    <!-- ═══════════════════════════════
-         VISTA EMPLEADO
-    ═══════════════════════════════ -->
+    <!-- EMPLEADO -->
     <div id="screen-empleado" class="screen active">
       <div class="card">
         <div class="card-title">Registrar jornada</div>
         <div class="form-group">
           <label>Tu nombre</label>
-          <div class="select-wrap">
-            <select id="emp-nombre"><option value="">— Selecciona —</option></select>
-          </div>
+          <div class="select-wrap"><select id="emp-nombre"><option value="">— Selecciona —</option></select></div>
         </div>
         <div class="form-group">
           <label>Ubicación / cliente</label>
-          <div class="select-wrap">
-            <select id="emp-ubicacion"><option value="">— Selecciona —</option></select>
-          </div>
+          <div class="select-wrap"><select id="emp-ubicacion"><option value="">— Selecciona —</option></select></div>
         </div>
         <div class="form-group">
           <label>Nota (opcional)</label>
           <input type="text" id="emp-nota" placeholder="Ej: llegué por puerta trasera">
         </div>
         <button class="btn btn-entrada" id="btn-entrada" onclick="fichar('entrada')">Registrar entrada</button>
-        <button class="btn btn-salida"  id="btn-salida"  onclick="fichar('salida')">Registrar salida</button>
+        <button class="btn btn-salida" id="btn-salida" onclick="fichar('salida')">Registrar salida</button>
         <div class="toast" id="toast-emp"></div>
       </div>
       <div class="card" id="historial-card" style="display:none">
@@ -185,19 +142,15 @@
       </div>
     </div>
 
-    <!-- ═══════════════════════════════
-         VISTA ADMIN
-    ═══════════════════════════════ -->
+    <!-- ADMIN -->
     <div id="screen-admin" class="screen">
       <div id="admin-login">
-        <div class="card login-overlay">
+        <div class="card">
           <div class="card-title" style="text-align:center">Acceso administración</div>
-          <p style="font-size:14px;color:var(--text-s);text-align:center;margin-bottom:4px;">Ingresa el PIN de 4 dígitos</p>
+          <p style="font-size:14px;color:var(--text-s);text-align:center;margin-bottom:4px">Ingresa el PIN de 4 dígitos</p>
           <div class="pin-display">
-            <div class="pin-dot" id="pd0"></div>
-            <div class="pin-dot" id="pd1"></div>
-            <div class="pin-dot" id="pd2"></div>
-            <div class="pin-dot" id="pd3"></div>
+            <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+            <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
           </div>
           <div class="pin-pad">
             <button class="pin-key" onclick="pinPress('1')">1</button>
@@ -213,25 +166,22 @@
             <button class="pin-key" onclick="pinPress('0')">0</button>
             <button class="pin-key del" onclick="pinDel()">⌫</button>
           </div>
-          <div class="toast" id="toast-pin" style="margin-top:16px;text-align:center;"></div>
-          <p style="font-size:12px;color:var(--text-s);text-align:center;margin-top:16px;">PIN por defecto: <strong>1234</strong> — cámbialo en Configuración</p>
+          <div class="toast" id="toast-pin" style="margin-top:16px;text-align:center"></div>
+          <p style="font-size:12px;color:var(--text-s);text-align:center;margin-top:16px">PIN por defecto: <strong>1234</strong></p>
         </div>
       </div>
-
       <div id="admin-panel" style="display:none">
         <div class="metrics">
           <div class="metric"><div class="num" id="stat-activos">—</div><div class="lbl">Activos ahora</div></div>
           <div class="metric"><div class="num" id="stat-total">—</div><div class="lbl">Registros hoy</div></div>
         </div>
-
         <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
             <div class="card-title" style="margin:0">En turno ahora</div>
             <button class="btn btn-outline btn-sm" onclick="cargarResumen()">↻</button>
           </div>
-          <div id="activos-lista"><p style="color:var(--text-s);font-size:14px;">Cargando...</p></div>
+          <div id="activos-lista"><p style="color:var(--text-s);font-size:14px">Cargando...</p></div>
         </div>
-
         <div class="card">
           <div class="card-title">Resumen mensual — nóminas</div>
           <div class="mes-selector">
@@ -244,26 +194,21 @@
               <tbody id="resumen-body"><tr><td colspan="4" style="text-align:center;color:var(--text-s);padding:20px">Cargando...</td></tr></tbody>
             </table>
           </div>
-          <p style="font-size:12px;color:var(--text-s);margin-top:10px;">"Revisar" = días con entrada sin salida registrada.</p>
+          <p style="font-size:12px;color:var(--text-s);margin-top:10px">"Revisar" = días con entrada sin salida registrada.</p>
         </div>
-
-        <button class="btn btn-outline" onclick="cerrarAdmin()" style="margin-top:4px;">Cerrar sesión admin</button>
+        <button class="btn btn-outline" onclick="cerrarAdmin()" style="margin-top:4px">Cerrar sesión admin</button>
       </div>
     </div>
 
-    <!-- ═══════════════════════════════
-         VISTA CONFIGURACIÓN
-    ═══════════════════════════════ -->
+    <!-- CONFIGURACIÓN -->
     <div id="screen-config" class="screen">
       <div id="config-login">
         <div class="card">
           <div class="card-title" style="text-align:center">Acceso configuración</div>
-          <p style="font-size:14px;color:var(--text-s);text-align:center;margin-bottom:16px;">Solo para la administradora</p>
+          <p style="font-size:14px;color:var(--text-s);text-align:center;margin-bottom:16px">Solo para la administradora</p>
           <div class="pin-display">
-            <div class="pin-dot" id="cpd0"></div>
-            <div class="pin-dot" id="cpd1"></div>
-            <div class="pin-dot" id="cpd2"></div>
-            <div class="pin-dot" id="cpd3"></div>
+            <div class="pin-dot" id="cpd0"></div><div class="pin-dot" id="cpd1"></div>
+            <div class="pin-dot" id="cpd2"></div><div class="pin-dot" id="cpd3"></div>
           </div>
           <div class="pin-pad">
             <button class="pin-key" onclick="configPinPress('1')">1</button>
@@ -279,13 +224,10 @@
             <button class="pin-key" onclick="configPinPress('0')">0</button>
             <button class="pin-key del" onclick="configPinDel()">⌫</button>
           </div>
-          <div class="toast" id="toast-cpin" style="margin-top:16px;text-align:center;"></div>
+          <div class="toast" id="toast-cpin" style="margin-top:16px;text-align:center"></div>
         </div>
       </div>
-
       <div id="config-panel" style="display:none">
-
-        <!-- Empleados -->
         <div class="card">
           <div class="card-title">Empleados</div>
           <ul class="config-list" id="lista-empleados"></ul>
@@ -295,8 +237,6 @@
           </div>
           <div class="toast" id="toast-emp-config"></div>
         </div>
-
-        <!-- Ubicaciones -->
         <div class="card">
           <div class="card-title">Ubicaciones / clientes</div>
           <ul class="config-list" id="lista-ubicaciones"></ul>
@@ -306,10 +246,8 @@
           </div>
           <div class="toast" id="toast-ubi-config"></div>
         </div>
-
-        <!-- Cambiar PIN -->
         <div class="card">
-          <div class="card-title">Seguridad</div>
+          <div class="card-title">Seguridad — cambiar PIN</div>
           <div class="form-group">
             <label>PIN actual</label>
             <input type="password" id="pin-actual" maxlength="4" placeholder="••••">
@@ -325,8 +263,7 @@
           <button class="btn btn-purple" onclick="cambiarPin()">Cambiar PIN</button>
           <div class="toast" id="toast-pin-config"></div>
         </div>
-
-        <button class="btn btn-outline" onclick="cerrarConfig()" style="margin-top:4px;">Cerrar sesión</button>
+        <button class="btn btn-outline" onclick="cerrarConfig()" style="margin-top:4px">Cerrar sesión</button>
       </div>
     </div>
 
@@ -335,9 +272,9 @@
 
 <script>
 // ══════════════════════════════════════════
-//  CONFIGURACIÓN — pon aquí tu URL de Apps Script
+//  CONFIGURACIÓN — pega aquí tu URL de Apps Script
 // ══════════════════════════════════════════
-var API_URL = "https://script.google.com/macros/s/AKfycbz9ULILpvcGz9C4KHm9-j3h-TBphOGssXHoU11UrdGTabRomGUHUegRD0KppolErfkDJA/exec";
+var API_URL   = "https://script.google.com/macros/s/AKfycbz9ULILpvcGz9C4KHm9-j3h-TBphOGssXHoU11UrdGTabRomGUHUegRD0KppolErfkDJA/exec";
 var ADMIN_PIN = localStorage.getItem("amf_pin") || "1234";
 
 // ══════════════════════════════════════════
@@ -346,8 +283,8 @@ var ADMIN_PIN = localStorage.getItem("amf_pin") || "1234";
 var registrosHoy = [];
 var activosAhora = {};
 var intervalActivos;
-var pinBuffer     = "";
-var configPinBuf  = "";
+var pinBuffer    = "";
+var configPinBuf = "";
 
 // ══════════════════════════════════════════
 //  INICIALIZACIÓN
@@ -384,7 +321,22 @@ function verificarConexion() {
 }
 
 // ══════════════════════════════════════════
-//  CATÁLOGOS (empleados y ubicaciones)
+//  API — usa GET para evitar CORS
+// ══════════════════════════════════════════
+function apiCall(data, cb) {
+  if (API_URL === "PEGA_AQUI_TU_URL") {
+    setTimeout(function() { cb(demoRes(data)); }, 600);
+    return;
+  }
+  var url = API_URL + "?data=" + encodeURIComponent(JSON.stringify(data));
+  fetch(url, { method: "GET", redirect: "follow" })
+    .then(function(r) { return r.json(); })
+    .then(cb)
+    .catch(function() { cb(null); });
+}
+
+// ══════════════════════════════════════════
+//  CATÁLOGOS
 // ══════════════════════════════════════════
 function cargarEmpleados() {
   apiCall({ accion: "obtenerEmpleados" }, function(res) {
@@ -411,69 +363,53 @@ function cargarUbicaciones() {
 }
 
 function renderListaConfig(listaId, items, tipo) {
-  var ul   = document.getElementById(listaId);
+  var ul = document.getElementById(listaId);
   ul.innerHTML = "";
   if (!items.length) {
-    ul.innerHTML = '<li style="padding:10px 0;color:var(--text-s);font-size:14px;">Sin registros aún.</li>';
+    ul.innerHTML = '<li style="padding:10px 0;color:var(--text-s);font-size:14px">Sin registros aún.</li>';
     return;
   }
-  items.forEach(function(item, idx) {
+  items.forEach(function(item) {
     var li = document.createElement("li");
     li.className = "config-item";
     li.innerHTML = '<span>' + item + '</span>' +
-      '<button class="btn-del" onclick="eliminar(\'' + tipo + '\',' + idx + ',\'' + encodeURIComponent(item) + '\')" title="Eliminar">✕</button>';
+      '<button class="btn-del" onclick="eliminar(\'' + tipo + '\',\'' + encodeURIComponent(item) + '\')">✕</button>';
     ul.appendChild(li);
   });
 }
 
-// ══════════════════════════════════════════
-//  AGREGAR / ELIMINAR (configuración)
-// ══════════════════════════════════════════
 function agregarEmpleado() {
-  var input = document.getElementById("nuevo-empleado");
+  var input  = document.getElementById("nuevo-empleado");
   var nombre = input.value.trim();
   if (!nombre) { mostrarToast("emp-config", "Escribe un nombre.", false); return; }
   apiCall({ accion: "agregarEmpleado", nombre: nombre }, function(res) {
-    if (res && res.ok) {
-      input.value = "";
-      mostrarToast("emp-config", nombre + " agregado correctamente.", true);
-      cargarEmpleados();
-    } else {
-      mostrarToast("emp-config", "Error al agregar. Intenta de nuevo.", false);
-    }
+    if (res && res.ok) { input.value = ""; mostrarToast("emp-config", nombre + " agregado.", true); cargarEmpleados(); }
+    else mostrarToast("emp-config", "Error al agregar.", false);
   });
 }
 
 function agregarUbicacion() {
-  var input = document.getElementById("nueva-ubicacion");
+  var input  = document.getElementById("nueva-ubicacion");
   var nombre = input.value.trim();
   if (!nombre) { mostrarToast("ubi-config", "Escribe el nombre del sitio.", false); return; }
   apiCall({ accion: "agregarUbicacion", nombre: nombre }, function(res) {
-    if (res && res.ok) {
-      input.value = "";
-      mostrarToast("ubi-config", nombre + " agregado correctamente.", true);
-      cargarUbicaciones();
-    } else {
-      mostrarToast("ubi-config", "Error al agregar. Intenta de nuevo.", false);
-    }
+    if (res && res.ok) { input.value = ""; mostrarToast("ubi-config", nombre + " agregado.", true); cargarUbicaciones(); }
+    else mostrarToast("ubi-config", "Error al agregar.", false);
   });
 }
 
-function eliminar(tipo, idx, itemEnc) {
-  var item = decodeURIComponent(itemEnc);
-  if (!confirm("¿Eliminar \"" + item + "\"?")) return;
+function eliminar(tipo, itemEnc) {
+  var item   = decodeURIComponent(itemEnc);
+  if (!confirm('¿Eliminar "' + item + '"?')) return;
   var accion = tipo === "empleado" ? "eliminarEmpleado" : "eliminarUbicacion";
   apiCall({ accion: accion, nombre: item }, function(res) {
-    if (res && res.ok) {
-      tipo === "empleado" ? cargarEmpleados() : cargarUbicaciones();
-    } else {
-      alert("Error al eliminar.");
-    }
+    if (res && res.ok) { tipo === "empleado" ? cargarEmpleados() : cargarUbicaciones(); }
+    else alert("Error al eliminar.");
   });
 }
 
 // ══════════════════════════════════════════
-//  FICHAR (empleado)
+//  FICHAR
 // ══════════════════════════════════════════
 function fichar(tipo) {
   var nombre    = document.getElementById("emp-nombre").value;
@@ -496,23 +432,19 @@ function fichar(tipo) {
 }
 
 function enviarFichaje(tipo, nombre, ubicacion, nota, lat, lng, btn, orig) {
-  apiCall({ accion:"fichar", tipo, empleado:nombre, ubicacion, nota, gpsLat:lat, gpsLng:lng }, function(res) {
+  apiCall({ accion:"fichar", tipo:tipo, empleado:nombre, ubicacion:ubicacion, nota:nota, gpsLat:lat, gpsLng:lng }, function(res) {
     btn.textContent = orig; btn.disabled = false;
     if (res && res.ok) {
       mostrarToast("emp", (tipo==="entrada"?"Entrada":"Salida") + " registrada — " + res.hora + " · " + ubicacion, true);
-      registrarLocal(tipo, nombre, ubicacion, res.hora);
+      registrosHoy.push({ tipo:tipo, nombre:nombre, ubicacion:ubicacion, hora:res.hora });
+      if (tipo==="entrada") activosAhora[nombre] = { hora:res.hora, ubicacion:ubicacion };
+      else delete activosAhora[nombre];
       mostrarHistorial(nombre);
       document.getElementById("emp-nota").value = "";
     } else {
       mostrarToast("emp", "Error al registrar. Intenta de nuevo.", false);
     }
   });
-}
-
-function registrarLocal(tipo, nombre, ubicacion, hora) {
-  registrosHoy.push({ tipo, nombre, ubicacion, hora });
-  if (tipo === "entrada") activosAhora[nombre] = { hora, ubicacion };
-  else delete activosAhora[nombre];
 }
 
 function mostrarHistorial(nombre) {
@@ -527,7 +459,7 @@ function mostrarHistorial(nombre) {
 }
 
 // ══════════════════════════════════════════
-//  ADMIN — PIN
+//  ADMIN PIN
 // ══════════════════════════════════════════
 function pinPress(d) {
   if (pinBuffer.length >= 4) return;
@@ -537,7 +469,7 @@ function pinPress(d) {
     setTimeout(function() {
       if (pinBuffer === ADMIN_PIN) {
         document.getElementById("admin-login").style.display = "none";
-        document.getElementById("admin-panel").style.display  = "block";
+        document.getElementById("admin-panel").style.display = "block";
         cargarResumen();
       } else {
         mostrarToast("pin", "PIN incorrecto.", false);
@@ -554,13 +486,13 @@ function pinDel() {
 }
 function cerrarAdmin() {
   document.getElementById("admin-login").style.display = "block";
-  document.getElementById("admin-panel").style.display  = "none";
+  document.getElementById("admin-panel").style.display = "none";
   pinBuffer = "";
   for (var i=0;i<4;i++) document.getElementById("pd"+i).classList.remove("filled");
 }
 
 // ══════════════════════════════════════════
-//  CONFIG — PIN
+//  CONFIG PIN
 // ══════════════════════════════════════════
 function configPinPress(d) {
   if (configPinBuf.length >= 4) return;
@@ -570,7 +502,7 @@ function configPinPress(d) {
     setTimeout(function() {
       if (configPinBuf === ADMIN_PIN) {
         document.getElementById("config-login").style.display = "none";
-        document.getElementById("config-panel").style.display  = "block";
+        document.getElementById("config-panel").style.display = "block";
         cargarEmpleados(); cargarUbicaciones();
       } else {
         mostrarToast("cpin", "PIN incorrecto.", false);
@@ -587,23 +519,23 @@ function configPinDel() {
 }
 function cerrarConfig() {
   document.getElementById("config-login").style.display = "block";
-  document.getElementById("config-panel").style.display  = "none";
+  document.getElementById("config-panel").style.display = "none";
   configPinBuf = "";
   for (var i=0;i<4;i++) document.getElementById("cpd"+i).classList.remove("filled");
 }
 
 function cambiarPin() {
-  var actual   = document.getElementById("pin-actual").value;
-  var nuevo    = document.getElementById("pin-nuevo").value;
-  var confirm  = document.getElementById("pin-confirm").value;
-  if (actual !== ADMIN_PIN)       { mostrarToast("pin-config","PIN actual incorrecto.",false); return; }
-  if (nuevo.length !== 4)         { mostrarToast("pin-config","El PIN debe tener 4 dígitos.",false); return; }
-  if (nuevo !== confirm)          { mostrarToast("pin-config","Los PINs no coinciden.",false); return; }
+  var actual  = document.getElementById("pin-actual").value;
+  var nuevo   = document.getElementById("pin-nuevo").value;
+  var confirm = document.getElementById("pin-confirm").value;
+  if (actual !== ADMIN_PIN)  { mostrarToast("pin-config","PIN actual incorrecto.",false); return; }
+  if (nuevo.length !== 4)    { mostrarToast("pin-config","El PIN debe tener 4 dígitos.",false); return; }
+  if (nuevo !== confirm)     { mostrarToast("pin-config","Los PINs no coinciden.",false); return; }
   ADMIN_PIN = nuevo;
   localStorage.setItem("amf_pin", nuevo);
-  document.getElementById("pin-actual").value  = "";
-  document.getElementById("pin-nuevo").value   = "";
-  document.getElementById("pin-confirm").value = "";
+  document.getElementById("pin-actual").value = "";
+  document.getElementById("pin-nuevo").value  = "";
+  document.getElementById("pin-confirm").value= "";
   mostrarToast("pin-config","PIN actualizado correctamente.",true);
 }
 
@@ -612,7 +544,7 @@ function cambiarPin() {
 // ══════════════════════════════════════════
 function cargarResumen() {
   var mes = document.getElementById("sel-mes") ? document.getElementById("sel-mes").value : "";
-  apiCall({ accion:"obtenerResumen", mes }, function(res) {
+  apiCall({ accion:"obtenerResumen", mes:mes }, function(res) {
     if (!res || !res.ok) return;
     renderActivos(res.activos);
     renderResumen(res.resumen);
@@ -625,12 +557,12 @@ function renderActivos(activos) {
   document.getElementById("stat-total").textContent   = registrosHoy.length || "0";
   if (!keys.length) {
     document.getElementById("activos-lista").innerHTML =
-      '<p style="color:var(--text-s);font-size:14px;padding:4px 0;">Ningún empleado activo en este momento.</p>';
+      '<p style="color:var(--text-s);font-size:14px;padding:4px 0">Ningún empleado activo ahora.</p>';
     return;
   }
   document.getElementById("activos-lista").innerHTML = keys.map(function(n) {
     var a = activos[n];
-    return '<div class="emp-row"><div style="display:flex;align-items:center;">' +
+    return '<div class="emp-row"><div style="display:flex;align-items:center">' +
       '<span class="dot dot-on"></span><div>' +
       '<div class="emp-name">'+n+'</div>' +
       '<div class="emp-meta">'+a.ubicacion+' · desde '+a.hora+'</div></div></div>' +
@@ -691,45 +623,34 @@ function showTab(tab, el) {
 function mostrarToast(id, msg, ok) {
   var t = document.getElementById("toast-"+id);
   if (!t) return;
-  t.textContent = msg;
-  t.className   = "toast " + (ok ? "ok" : "err");
+  t.textContent   = msg;
+  t.className     = "toast " + (ok ? "ok" : "err");
   t.style.display = "block";
   setTimeout(function() { t.style.display = "none"; }, 5000);
 }
 
 // ══════════════════════════════════════════
-//  API (con modo demo integrado)
+//  DEMO (cuando no hay API conectada)
 // ══════════════════════════════════════════
-var _demoEmpleados  = ["Ana García","Carlos Mendoza","Lucía Torres","Pedro Sánchez"];
-var _demoUbicaciones = ["Oficinas Centro — Kista","Hospital Norte","Centro Comercial Sur","Escuela Lindsberg"];
-
-function apiCall(data, cb) {
-  if (API_URL.indexOf("TU_ID_AQUI") > -1) {
-    setTimeout(function() { cb(demoRes(data)); }, 600);
-    return;
-  }
-  fetch(API_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(data) })
-    .then(function(r){ return r.json(); }).then(cb).catch(function(){ cb(null); });
-}
+var _demoEmp = ["Ana García","Carlos Mendoza","Lucía Torres","Pedro Sánchez"];
+var _demoUbi = ["Oficinas Centro","Hospital Norte","Centro Comercial Sur","Escuela Lindsberg"];
 
 function demoRes(data) {
   var a = data.accion;
-  if (a==="obtenerEmpleados")  return { ok:true, empleados: _demoEmpleados.slice() };
-  if (a==="obtenerUbicaciones")return { ok:true, ubicaciones: _demoUbicaciones.slice() };
-  if (a==="agregarEmpleado")   { _demoEmpleados.push(data.nombre); return { ok:true }; }
-  if (a==="agregarUbicacion")  { _demoUbicaciones.push(data.nombre); return { ok:true }; }
-  if (a==="eliminarEmpleado")  { _demoEmpleados = _demoEmpleados.filter(function(e){ return e!==data.nombre; }); return { ok:true }; }
-  if (a==="eliminarUbicacion") { _demoUbicaciones = _demoUbicaciones.filter(function(e){ return e!==data.nombre; }); return { ok:true }; }
+  if (a==="obtenerEmpleados")  return { ok:true, empleados: _demoEmp.slice() };
+  if (a==="obtenerUbicaciones")return { ok:true, ubicaciones: _demoUbi.slice() };
+  if (a==="agregarEmpleado")   { _demoEmp.push(data.nombre); return { ok:true }; }
+  if (a==="agregarUbicacion")  { _demoUbi.push(data.nombre); return { ok:true }; }
+  if (a==="eliminarEmpleado")  { _demoEmp = _demoEmp.filter(function(e){ return e!==data.nombre; }); return { ok:true }; }
+  if (a==="eliminarUbicacion") { _demoUbi = _demoUbi.filter(function(e){ return e!==data.nombre; }); return { ok:true }; }
   if (a==="fichar") { var h=new Date(); return { ok:true, hora:pad(h.getHours())+":"+pad(h.getMinutes()), fecha:pad(h.getDate())+"/"+pad(h.getMonth()+1)+"/"+h.getFullYear() }; }
-  if (a==="obtenerResumen") return { ok:true,
-    activos: { "Ana García":{ hora:"08:12", ubicacion:"Oficinas Centro" } },
-    resumen: [
+  if (a==="obtenerResumen") return { ok:true, activos:{ "Ana García":{ hora:"08:12", ubicacion:"Oficinas Centro" } },
+    resumen:[
       { empleado:"Ana García",    dias:22, horas:"176.0", incompletos:0, ubicaciones:"Oficinas Centro", estado:"Listo" },
       { empleado:"Carlos Mendoza",dias:20, horas:"162.0", incompletos:0, ubicaciones:"Hospital Norte",  estado:"Listo" },
       { empleado:"Lucía Torres",  dias:19, horas:"148.0", incompletos:1, ubicaciones:"C. Comercial",    estado:"Revisar" },
       { empleado:"Pedro Sánchez", dias:24, horas:"196.0", incompletos:0, ubicaciones:"Hospital Norte",  estado:"Listo" }
-    ]
-  };
+    ]};
   return { ok:false };
 }
 
