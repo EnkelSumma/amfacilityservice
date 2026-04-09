@@ -337,7 +337,7 @@
 // ══════════════════════════════════════════
 //  CONFIGURACIÓN — pon aquí tu URL de Apps Script
 // ══════════════════════════════════════════
-var API_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbz9H-n4IxfegJJpD1x05drQ9QJ1hPvz2ZmHa9gzCBbymz4Bk19AcFPQ92pEnrH0UlmNoQ/exec/exec/exec";
+var API_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbz9ULILpvcGz9C4KHm9-j3h-TBphOGssXHoU11UrdGTabRomGUHUegRD0KppolErfkDJA/exec/exec";
 var ADMIN_PIN = localStorage.getItem("amf_pin") || "1234";
 
 // ══════════════════════════════════════════
@@ -704,7 +704,7 @@ var _demoEmpleados  = ["Ana García","Carlos Mendoza","Lucía Torres","Pedro Sá
 var _demoUbicaciones = ["Oficinas Centro — Kista","Hospital Norte","Centro Comercial Sur","Escuela Lindsberg"];
 
 function apiCall(data, cb) {
-  if (API_URL.indexOf("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbz9H-n4IxfegJJpD1x05drQ9QJ1hPvz2ZmHa9gzCBbymz4Bk19AcFPQ92pEnrH0UlmNoQ/exec/exec") > -1) {
+  if (API_URL.indexOf("TU_ID_AQUI") > -1) {
     setTimeout(function() { cb(demoRes(data)); }, 600);
     return;
   }
