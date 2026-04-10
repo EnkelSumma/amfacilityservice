@@ -127,6 +127,18 @@
     .estado-activo .ea-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:pulse 1.5s ease-in-out infinite}
     .estado-activo .ea-text{font-size:14px;color:var(--teal-d)}
     .estado-activo .ea-tiempo{font-size:18px;font-weight:700;color:var(--teal);margin-left:auto;font-variant-numeric:tabular-nums}
+    .historial-par{padding:12px 0;border-bottom:1px solid var(--border)}
+    .historial-par:last-child{border-bottom:none}
+    .historial-linea{display:flex;align-items:center;gap:10px;padding:4px 0}
+    .historial-icono{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+    .icono-entrada{background:var(--teal-l);color:var(--teal-d)}
+    .icono-salida{background:var(--coral-l);color:var(--coral)}
+    .historial-info{flex:1}
+    .historial-tipo{font-size:14px;font-weight:600;color:var(--text)}
+    .historial-detalle{font-size:12px;color:var(--text-s);margin-top:1px}
+    .historial-duracion{font-size:13px;font-weight:600;color:var(--teal);background:var(--teal-l);padding:3px 8px;border-radius:6px;white-space:nowrap}
+    .historial-duracion-pend{font-size:12px;color:var(--amber);background:var(--amber-l);padding:3px 8px;border-radius:6px;white-space:nowrap}
+    .historial-separador{height:1px;background:var(--border);margin:8px 0}
   </style>
 </head>
 <body>
@@ -698,7 +710,7 @@ function enviarFichaje(tipo, nombre, ubicacion, nota, lat, lng, btn, orig) {
       registrosHoy.push({ tipo:tipo, nombre:nombre, ubicacion:ubicacion, hora:res.hora });
       if (tipo==="entrada") activosAhora[nombre] = { hora:res.hora, ubicacion:ubicacion };
       else delete activosAhora[nombre];
-      mostrarHistorial(nombre);
+      renderHistorialLocal(nombre);
       document.getElementById("emp-nota").value = "";
       // Recargar resumen y estado de botones
       cargarResumenEmpleado(nombre);
@@ -710,19 +722,75 @@ function enviarFichaje(tipo, nombre, ubicacion, nota, lat, lng, btn, orig) {
 }
 
 function mostrarHistorial(nombre) {
+  renderHistorialLocal(nombre);
+}
+
+function renderHistorialLocal(nombre) {
   var mis = registrosHoy.filter(function(r) { return r.nombre === nombre; });
   if (!mis.length) return;
   document.getElementById("historial-card").style.display = "block";
-  document.getElementById("historial-lista").innerHTML = mis.map(function(r) {
-    return '<div class="emp-row"><div><div class="emp-name">'+(r.tipo==="entrada"?"Entrada":"Salida")+'</div>' +
-      '<div class="emp-meta">'+r.hora+' · '+r.ubicacion+'</div></div>' +
-      '<span class="badge '+(r.tipo==="entrada"?"badge-ok":"badge-off")+'">'+(r.tipo==="entrada"?"Entrada":"Salida")+'</span></div>';
+
+  var pares  = [];
+  var actual = null;
+
+  mis.forEach(function(r) {
+    if (r.tipo === "entrada") {
+      actual = { entrada: r, salida: null };
+      pares.push(actual);
+    } else if (r.tipo === "salida") {
+      if (actual && !actual.salida) {
+        actual.salida = r;
+      } else {
+        pares.push({ entrada: null, salida: r });
+      }
+      actual = null;
+    }
+  });
+
+  var html = pares.map(function(par) {
+    var duracion = "";
+    if (par.entrada && par.salida) {
+      var pE   = par.entrada.hora.split(":");
+      var pS   = par.salida.hora.split(":");
+      var minE = parseInt(pE[0])*60 + parseInt(pE[1]);
+      var minS = parseInt(pS[0])*60 + parseInt(pS[1]);
+      var diff = minS - minE; if (diff < 0) diff += 1440;
+      var hh   = Math.floor(diff/60), mm = diff%60;
+      duracion = hh + "h " + (mm<10?"0":"") + mm + "m";
+    }
+
+    var h = '<div style="padding:12px 0;border-bottom:1px solid var(--border)">';
+
+    if (par.entrada) {
+      var badge = duracion
+        ? '<span style="font-size:12px;font-weight:600;color:var(--teal-d);background:var(--teal-l);padding:3px 9px;border-radius:6px">' + duracion + '</span>'
+        : '<span style="font-size:12px;color:var(--amber);background:var(--amber-l);padding:3px 9px;border-radius:6px">En curso</span>';
+      h += '<div style="display:flex;align-items:center;gap:10px;padding:3px 0">'
+         + '<div style="width:28px;height:28px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">→</div>'
+         + '<div style="flex:1"><div style="font-size:14px;font-weight:600">Entrada</div>'
+         + '<div style="font-size:12px;color:var(--text-s)">' + par.entrada.hora + ' · ' + par.entrada.ubicacion + '</div></div>'
+         + badge + '</div>';
+    }
+
+    if (par.entrada && par.salida) {
+      h += '<div style="margin-left:13px;padding:2px 0;border-left:2px dashed var(--border)">&nbsp;</div>';
+    }
+
+    if (par.salida) {
+      h += '<div style="display:flex;align-items:center;gap:10px;padding:3px 0">'
+         + '<div style="width:28px;height:28px;border-radius:50%;background:var(--coral-l);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">←</div>'
+         + '<div style="flex:1"><div style="font-size:14px;font-weight:600">Salida</div>'
+         + '<div style="font-size:12px;color:var(--text-s)">' + par.salida.hora + ' · ' + par.salida.ubicacion + '</div></div>'
+         + '</div>';
+    }
+
+    h += '</div>';
+    return h;
   }).join("");
+
+  document.getElementById("historial-lista").innerHTML = html;
 }
 
-// ══════════════════════════════════════════
-//  ADMIN PIN
-// ══════════════════════════════════════════
 function pinPress(d) {
   if (pinBuffer.length >= 4) return;
   pinBuffer += d;
