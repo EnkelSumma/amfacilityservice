@@ -122,6 +122,11 @@
     .aviso-pend .ap-body{font-size:13px;color:#854F0B;margin-bottom:12px;line-height:1.5}
     .btn-salida-rapida{width:100%;padding:11px;background:#BA7517;color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer}
     .btn-salida-rapida:active{transform:scale(0.98)}
+    .btn-disabled{opacity:0.35;pointer-events:none}
+    .estado-activo{background:var(--teal-l);border:1px solid #9FE1CB;border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:none;align-items:center;gap:12px}
+    .estado-activo .ea-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);flex-shrink:0;animation:pulse 1.5s ease-in-out infinite}
+    .estado-activo .ea-text{font-size:14px;color:var(--teal-d)}
+    .estado-activo .ea-tiempo{font-size:18px;font-weight:700;color:var(--teal);margin-left:auto;font-variant-numeric:tabular-nums}
   </style>
 </head>
 <body>
@@ -145,6 +150,13 @@
 
     <!-- EMPLEADO -->
     <div id="screen-empleado" class="screen active">
+      <!-- ESTADO JORNADA ACTIVA -->
+      <div class="estado-activo" id="estado-activo">
+        <div class="ea-dot"></div>
+        <div class="ea-text">Jornada en curso</div>
+        <div class="ea-tiempo" id="estado-tiempo">0h 00m</div>
+      </div>
+
       <!-- AVISO SALIDA PENDIENTE -->
       <div class="aviso-pend" id="aviso-pend">
         <div class="ap-icon">⚠️</div>
@@ -478,6 +490,47 @@ function eliminar(tipo, itemEnc) {
 // ══════════════════════════════════════════
 
 
+
+// ══════════════════════════════════════════
+//  CONTROLAR BOTONES SEGÚN ESTADO
+// ══════════════════════════════════════════
+function actualizarBotones(pendiente) {
+  var btnEntrada = document.getElementById("btn-entrada");
+  var btnSalida  = document.getElementById("btn-salida");
+  var estadoDiv  = document.getElementById("estado-activo");
+
+  if (pendiente) {
+    // Tiene entrada activa — solo permitir salida
+    btnEntrada.classList.add("btn-disabled");
+    btnSalida.classList.remove("btn-disabled");
+    estadoDiv.style.display = "flex";
+    actualizarTiempoActivo(pendiente.hora);
+  } else {
+    // Sin entrada activa — solo permitir entrada
+    btnEntrada.classList.remove("btn-disabled");
+    btnSalida.classList.add("btn-disabled");
+    estadoDiv.style.display = "none";
+  }
+}
+
+var intervaloEstado = null;
+function actualizarTiempoActivo(horaEntrada) {
+  clearInterval(intervaloEstado);
+  function tick() {
+    var partes     = horaEntrada.toString().split(":");
+    var minEntrada = (parseInt(partes[0])||0)*60 + (parseInt(partes[1])||0);
+    var ahora      = new Date();
+    var minAhora   = ahora.getHours()*60 + ahora.getMinutes();
+    var diff       = minAhora - minEntrada;
+    if (diff < 0) diff += 1440;
+    var hh = Math.floor(diff/60), mm = diff%60;
+    var el = document.getElementById("estado-tiempo");
+    if (el) el.textContent = hh+"h "+(mm<10?"0":"")+mm+"m";
+  }
+  tick();
+  intervaloEstado = setInterval(tick, 60000);
+}
+
 // ══════════════════════════════════════════
 //  MEMORIA — recuerda nombre y ubicación
 // ══════════════════════════════════════════
@@ -585,6 +638,7 @@ function cargarResumenEmpleado(nombre) {
 
     // Aviso si tiene entrada pendiente hoy
     mostrarEstadoJornada(res.pendiente);
+    actualizarBotones(res.pendiente);
   });
 }
 
@@ -646,8 +700,11 @@ function enviarFichaje(tipo, nombre, ubicacion, nota, lat, lng, btn, orig) {
       else delete activosAhora[nombre];
       mostrarHistorial(nombre);
       document.getElementById("emp-nota").value = "";
+      // Recargar resumen y estado de botones
+      cargarResumenEmpleado(nombre);
     } else {
-      mostrarToast("emp", "Error al registrar. Intenta de nuevo.", false);
+      var msg = (res && res.error) ? res.error : "Error al registrar. Intenta de nuevo.";
+      mostrarToast("emp", msg, false);
     }
   });
 }
