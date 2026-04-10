@@ -168,11 +168,11 @@
         <div class="card-title">Registrar jornada</div>
         <div class="form-group">
           <label>Tu nombre</label>
-          <div class="select-wrap"><select id="emp-nombre" onchange="if(this.value) cargarResumenEmpleado(this.value)"><option value="">— Selecciona —</option></select></div>
+          <div class="select-wrap"><select id="emp-nombre" onchange="if(this.value){ guardarPreferencia('nombre',this.value); cargarResumenEmpleado(this.value);}"><option value="">— Selecciona —</option></select></div>
         </div>
         <div class="form-group">
           <label>Ubicación / cliente</label>
-          <div class="select-wrap"><select id="emp-ubicacion"><option value="">— Selecciona —</option></select></div>
+          <div class="select-wrap"><select id="emp-ubicacion" onchange="if(this.value) guardarPreferencia('ubicacion',this.value)"><option value="">— Selecciona —</option></select></div>
         </div>
         <div class="form-group">
           <label>Nota (opcional)</label>
@@ -338,7 +338,7 @@
 // ══════════════════════════════════════════
 //  CONFIGURACIÓN — pega aquí tu URL de Apps Script
 // ══════════════════════════════════════════
-var API_URL   = "https://script.google.com/macros/s/AKfycbz9ULILpvcGz9C4KHm9-j3h-TBphOGssXHoU11UrdGTabRomGUHUegRD0KppolErfkDJA/exec";
+var API_URL   = "https://script.google.com/macros/s/AKfycbzbd7Wd1LVqmMWwuGNVnjUWIPNRiz3170NirCCk-TTsNF6jnWvIU7lOWoQySnrDvSfdvg/exec";
 var ADMIN_PIN = localStorage.getItem("amf_pin") || "1234";
 
 // ══════════════════════════════════════════
@@ -358,6 +358,7 @@ window.onload = function() {
   cargarEmpleados();
   cargarUbicaciones();
   verificarConexion();
+  restaurarPreferencias();
 };
 
 function poblarMeses() {
@@ -476,6 +477,93 @@ function eliminar(tipo, itemEnc) {
 //  FICHAR
 // ══════════════════════════════════════════
 
+
+// ══════════════════════════════════════════
+//  MEMORIA — recuerda nombre y ubicación
+// ══════════════════════════════════════════
+function guardarPreferencia(clave, valor) {
+  localStorage.setItem("amf_" + clave, valor);
+}
+
+function restaurarPreferencias() {
+  var nombre    = localStorage.getItem("amf_nombre");
+  var ubicacion = localStorage.getItem("amf_ubicacion");
+  if (nombre) {
+    var sel = document.getElementById("emp-nombre");
+    // Esperar a que las opciones carguen
+    setTimeout(function() {
+      for (var i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === nombre) {
+          sel.value = nombre;
+          cargarResumenEmpleado(nombre);
+          break;
+        }
+      }
+    }, 800);
+  }
+  if (ubicacion) {
+    setTimeout(function() {
+      var selU = document.getElementById("emp-ubicacion");
+      for (var i = 0; i < selU.options.length; i++) {
+        if (selU.options[i].value === ubicacion) {
+          selU.value = ubicacion;
+          break;
+        }
+      }
+    }, 800);
+  }
+}
+
+// ══════════════════════════════════════════
+//  ESTADO DE JORNADA ACTIVA
+//  Muestra horas en vivo si hay entrada sin salida
+// ══════════════════════════════════════════
+var intervaloJornada = null;
+
+function mostrarEstadoJornada(pendiente) {
+  var aviso = document.getElementById("aviso-pend");
+  if (!pendiente) {
+    aviso.style.display = "none";
+    clearInterval(intervaloJornada);
+    return;
+  }
+
+  // Mostrar aviso con contador en vivo
+  document.getElementById("aviso-body").textContent =
+    "Entraste a las " + pendiente.hora + " en " + pendiente.ubicacion + ".";
+  aviso.style.display = "block";
+
+  // Botón de salida rápida
+  document.getElementById("btn-salida-rapida").onclick = function() {
+    var nombre = document.getElementById("emp-nombre").value;
+    var selUbi = document.getElementById("emp-ubicacion");
+    if (selUbi.value !== pendiente.ubicacion) selUbi.value = pendiente.ubicacion;
+    fichar("salida");
+  };
+
+  // Contador en vivo de horas acumuladas
+  function actualizarContador() {
+    var partes = pendiente.hora.toString().replace(/[apm\.]/gi,"").trim().split(":");
+    var h = parseInt(partes[0])||0, m = parseInt(partes[1])||0;
+    // Detectar pm/am en hora guardada
+    var horaStr = pendiente.hora.toString().toLowerCase();
+    if (horaStr.indexOf("p") > -1 && h !== 12) h += 12;
+    if (horaStr.indexOf("a") > -1 && h === 12) h = 0;
+    var minEntrada = h * 60 + m;
+    var ahora = new Date();
+    var minAhora = ahora.getHours() * 60 + ahora.getMinutes();
+    var diff = minAhora - minEntrada;
+    if (diff < 0) diff += 1440;
+    var hh = Math.floor(diff/60), mm = diff%60;
+    var el = document.getElementById("re-hoy");
+    if (el) el.textContent = hh + "h " + (mm<10?"0":"") + mm + "m";
+  }
+
+  clearInterval(intervaloJornada);
+  actualizarContador();
+  intervaloJornada = setInterval(actualizarContador, 60000);
+}
+
 // ══════════════════════════════════════════
 //  RESUMEN PERSONAL DEL EMPLEADO
 // ══════════════════════════════════════════
@@ -490,19 +578,7 @@ function cargarResumenEmpleado(nombre) {
     document.getElementById("re-mes").textContent    = res.mes    || "0h";
 
     // Aviso si tiene entrada pendiente hoy
-    if (res.pendiente) {
-      var aviso = document.getElementById("aviso-pend");
-      document.getElementById("aviso-body").textContent =
-        "Entraste a las " + res.pendiente.hora + " en " + res.pendiente.ubicacion + ". ¿Ya terminaste?";
-      aviso.style.display = "block";
-      document.getElementById("btn-salida-rapida").onclick = function() {
-        document.getElementById("emp-nombre").value    = nombre;
-        document.getElementById("emp-ubicacion").value = res.pendiente.ubicacion;
-        fichar("salida");
-      };
-    } else {
-      document.getElementById("aviso-pend").style.display = "none";
-    }
+    mostrarEstadoJornada(res.pendiente);
   });
 }
 
