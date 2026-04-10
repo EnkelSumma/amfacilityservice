@@ -486,31 +486,42 @@ function guardarPreferencia(clave, valor) {
 }
 
 function restaurarPreferencias() {
+  // Se llama después de que cargarEmpleados y cargarUbicaciones poblan los selects
+  // Usamos un intervalo que reintenta hasta encontrar las opciones
   var nombre    = localStorage.getItem("amf_nombre");
   var ubicacion = localStorage.getItem("amf_ubicacion");
+
   if (nombre) {
-    var sel = document.getElementById("emp-nombre");
-    // Esperar a que las opciones carguen
-    setTimeout(function() {
+    var intentos = 0;
+    var intervalo = setInterval(function() {
+      intentos++;
+      var sel = document.getElementById("emp-nombre");
       for (var i = 0; i < sel.options.length; i++) {
         if (sel.options[i].value === nombre) {
           sel.value = nombre;
           cargarResumenEmpleado(nombre);
+          clearInterval(intervalo);
           break;
         }
       }
-    }, 800);
+      if (intentos > 10) clearInterval(intervalo); // max 5 segundos
+    }, 500);
   }
+
   if (ubicacion) {
-    setTimeout(function() {
+    var intentosU = 0;
+    var intervaloU = setInterval(function() {
+      intentosU++;
       var selU = document.getElementById("emp-ubicacion");
       for (var i = 0; i < selU.options.length; i++) {
         if (selU.options[i].value === ubicacion) {
           selU.value = ubicacion;
+          clearInterval(intervaloU);
           break;
         }
       }
-    }, 800);
+      if (intentosU > 10) clearInterval(intervaloU);
+    }, 500);
   }
 }
 
@@ -541,18 +552,13 @@ function mostrarEstadoJornada(pendiente) {
     fichar("salida");
   };
 
-  // Contador en vivo de horas acumuladas
+  // Contador en vivo — la hora ya viene en formato "HH:mm" del servidor
   function actualizarContador() {
-    var partes = pendiente.hora.toString().replace(/[apm\.]/gi,"").trim().split(":");
-    var h = parseInt(partes[0])||0, m = parseInt(partes[1])||0;
-    // Detectar pm/am en hora guardada
-    var horaStr = pendiente.hora.toString().toLowerCase();
-    if (horaStr.indexOf("p") > -1 && h !== 12) h += 12;
-    if (horaStr.indexOf("a") > -1 && h === 12) h = 0;
-    var minEntrada = h * 60 + m;
-    var ahora = new Date();
-    var minAhora = ahora.getHours() * 60 + ahora.getMinutes();
-    var diff = minAhora - minEntrada;
+    var partes     = pendiente.hora.toString().split(":");
+    var minEntrada = (parseInt(partes[0])||0) * 60 + (parseInt(partes[1])||0);
+    var ahora      = new Date();
+    var minAhora   = ahora.getHours() * 60 + ahora.getMinutes();
+    var diff       = minAhora - minEntrada;
     if (diff < 0) diff += 1440;
     var hh = Math.floor(diff/60), mm = diff%60;
     var el = document.getElementById("re-hoy");
