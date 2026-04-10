@@ -644,13 +644,22 @@ function cargarResumenEmpleado(nombre) {
 
     document.getElementById("resumen-emp").style.display = "block";
     document.getElementById("resumen-nombre-label").textContent = "Mis horas — " + nombre;
-    document.getElementById("re-hoy").textContent    = res.hoy    || "0h";
-    document.getElementById("re-semana").textContent = res.semana || "0h";
-    document.getElementById("re-mes").textContent    = res.mes    || "0h";
+    document.getElementById("re-hoy").textContent    = res.hoy    || "0h 00m";
+    document.getElementById("re-semana").textContent = res.semana || "0h 00m";
+    document.getElementById("re-mes").textContent    = res.mes    || "0h 00m";
 
     // Aviso si tiene entrada pendiente hoy
     mostrarEstadoJornada(res.pendiente);
     actualizarBotones(res.pendiente);
+
+    // Mostrar historial real del día desde el servidor
+    if (res.historial && res.historial.length > 0) {
+      // Sincronizar con memoria local para que los nuevos registros también aparezcan
+      registrosHoy = res.historial.map(function(r) {
+        return { tipo: r.tipo, nombre: nombre, ubicacion: r.ubicacion, hora: r.hora, horas: r.horas };
+      });
+      renderHistorialServidor(nombre, res.historial);
+    }
   });
 }
 
@@ -710,9 +719,8 @@ function enviarFichaje(tipo, nombre, ubicacion, nota, lat, lng, btn, orig) {
       registrosHoy.push({ tipo:tipo, nombre:nombre, ubicacion:ubicacion, hora:res.hora });
       if (tipo==="entrada") activosAhora[nombre] = { hora:res.hora, ubicacion:ubicacion };
       else delete activosAhora[nombre];
-      renderHistorialLocal(nombre);
       document.getElementById("emp-nota").value = "";
-      // Recargar resumen y estado de botones
+      // Recargar todo desde servidor para tener historial completo
       cargarResumenEmpleado(nombre);
     } else {
       var msg = (res && res.error) ? res.error : "Error al registrar. Intenta de nuevo.";
@@ -723,6 +731,78 @@ function enviarFichaje(tipo, nombre, ubicacion, nota, lat, lng, btn, orig) {
 
 function mostrarHistorial(nombre) {
   renderHistorialLocal(nombre);
+}
+
+
+// ══════════════════════════════════════════
+//  HISTORIAL DESDE EL SERVIDOR (completo del día)
+// ══════════════════════════════════════════
+function renderHistorialServidor(nombre, historial) {
+  if (!historial || !historial.length) return;
+  document.getElementById("historial-card").style.display = "block";
+
+  var pares  = [];
+  var actual = null;
+
+  historial.forEach(function(r) {
+    if (r.tipo === "entrada") {
+      actual = { entrada: r, salida: null };
+      pares.push(actual);
+    } else if (r.tipo === "salida") {
+      if (actual && !actual.salida) {
+        actual.salida = r;
+      } else {
+        pares.push({ entrada: null, salida: r });
+      }
+      actual = null;
+    }
+  });
+
+  var html = pares.map(function(par) {
+    var duracion = "";
+    // Si el servidor ya calculó las horas, usarlas directamente
+    if (par.salida && par.salida.horas) {
+      duracion = par.salida.horas;
+    } else if (par.entrada && par.salida) {
+      var pE   = par.entrada.hora.split(":");
+      var pS   = par.salida.hora.split(":");
+      var minE = parseInt(pE[0])*60 + parseInt(pE[1]);
+      var minS = parseInt(pS[0])*60 + parseInt(pS[1]);
+      var diff = minS - minE; if (diff < 0) diff += 1440;
+      var hh   = Math.floor(diff/60), mm = diff%60;
+      duracion = hh + "h " + (mm<10?"0":"") + mm + "m";
+    }
+
+    var h = '<div style="padding:12px 0;border-bottom:1px solid var(--border)">';
+
+    if (par.entrada) {
+      var badge = duracion
+        ? '<span style="font-size:12px;font-weight:600;color:var(--teal-d);background:var(--teal-l);padding:3px 9px;border-radius:6px">' + duracion + '</span>'
+        : '<span style="font-size:12px;color:var(--amber);background:var(--amber-l);padding:3px 9px;border-radius:6px">En curso</span>';
+      h += '<div style="display:flex;align-items:center;gap:10px;padding:3px 0">'
+         + '<div style="width:28px;height:28px;border-radius:50%;background:var(--teal-l);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">→</div>'
+         + '<div style="flex:1"><div style="font-size:14px;font-weight:600">Entrada</div>'
+         + '<div style="font-size:12px;color:var(--text-s)">' + par.entrada.hora + ' · ' + par.entrada.ubicacion + '</div></div>'
+         + badge + '</div>';
+    }
+
+    if (par.entrada && par.salida) {
+      h += '<div style="margin-left:13px;padding:2px 0;border-left:2px dashed var(--border)">&nbsp;</div>';
+    }
+
+    if (par.salida) {
+      h += '<div style="display:flex;align-items:center;gap:10px;padding:3px 0">'
+         + '<div style="width:28px;height:28px;border-radius:50%;background:var(--coral-l);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">←</div>'
+         + '<div style="flex:1"><div style="font-size:14px;font-weight:600">Salida</div>'
+         + '<div style="font-size:12px;color:var(--text-s)">' + par.salida.hora + ' · ' + par.salida.ubicacion + '</div></div>'
+         + '</div>';
+    }
+
+    h += '</div>';
+    return h;
+  }).join("");
+
+  document.getElementById("historial-lista").innerHTML = html;
 }
 
 function renderHistorialLocal(nombre) {
